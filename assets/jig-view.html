@@ -1,0 +1,80 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BRKT OP30 지그 3D</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}canvas{display:block;width:100%;height:100%}</style><canvas id="c"></canvas><div id="themes" hidden></div><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script>try{const THEMES={
+ "네이비+오렌지":{plate:0x2a3a58,block:0xc9d3df,inset:0xe8eef5,dark:0x0e131c,a1:0xff6a1a,a2:0xffb21e,metal:0xdfe6ee},
+ "민트+코랄":{plate:0x1f4a4a,block:0xd7e4e2,inset:0xf2f7f6,dark:0x0c1b1b,a1:0xff5c6c,a2:0xffd166,metal:0xe6efee},
+ "네온 다크":{plate:0x15151f,block:0x4b4f66,inset:0x7a80a0,dark:0x050508,a1:0xff2bd6,a2:0x00f0ff,metal:0xaab0c8},
+ "파스텔":{plate:0xb9c7e8,block:0xf3e9f7,inset:0xffffff,dark:0x6b6f8f,a1:0xff9eb5,a2:0xffe08a,metal:0xf4f6fb}
+};
+const cv=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(40,1,.1,100);
+S.add(new THREE.HemisphereLight(0xffffff,0x445566,.9));
+const dl=new THREE.DirectionalLight(0xffffff,.9);dl.position.set(6,10,5);S.add(dl);
+const dl2=new THREE.DirectionalLight(0xaaccff,.4);dl2.position.set(-8,4,-6);S.add(dl2);
+
+const M={};
+function mat(k,m=.45,r=.4){return M[k]=new THREE.MeshStandardMaterial({metalness:m,roughness:r});}
+['plate','block','inset','dark','a1','a2','metal'].forEach(k=>mat(k));
+M.metal.metalness=.8;M.metal.roughness=.25;M.plate.roughness=.5;
+function setTheme(n){const t=THEMES[n];for(const k in t)M[k].color.setHex(t[k]);
+ document.querySelectorAll('#themes button').forEach(b=>b.classList.toggle('on',b.textContent===n));}
+
+const G=new THREE.Group();S.add(G);
+function box(w,h,d,m,x,y,z){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M[m]);o.position.set(x,y,z);G.add(o);return o;}
+function cyl(r,h,m,x,y,z,seg=40,rot){const o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),M[m]);o.position.set(x,y,z);if(rot)o.rotation.z=Math.PI/2;G.add(o);return o;}
+
+// base plate with slots
+const sh=new THREE.Shape();const W=6,D=4,rr=.35;
+sh.moveTo(-W+rr,-D);sh.lineTo(W-rr,-D);sh.quadraticCurveTo(W,-D,W,-D+rr);sh.lineTo(W,D-rr);sh.quadraticCurveTo(W,D,W-rr,D);
+sh.lineTo(-W+rr,D);sh.quadraticCurveTo(-W,D,-W,D-rr);sh.lineTo(-W,-D+rr);sh.quadraticCurveTo(-W,-D,-W+rr,-D);
+[[-4.8,-3],[-4.8,3],[4.8,-3],[4.8,3],[0,3.4]].forEach(([x,y])=>{const h=new THREE.Path();const w=.55,l=.4;
+ h.moveTo(x-w,y-l);h.lineTo(x+w,y-l);h.lineTo(x+w,y+l);h.lineTo(x-w,y+l);h.closePath();sh.holes.push(h);});
+const pg=new THREE.ExtrudeGeometry(sh,{depth:.4,bevelEnabled:true,bevelSize:.04,bevelThickness:.04,bevelSegments:2});
+const plate=new THREE.Mesh(pg,M.plate);plate.rotation.x=-Math.PI/2;plate.position.y=-.2;G.add(plate);
+// note: shape y maps to -z after rotation
+
+// center clamp block
+box(3.4,.5,4.6,'block',-.3,.45,0);
+box(.55,.75,4.6,'block',1.75,.58,0);
+box(2.4,.06,4.1,'inset',-.3,.72,0);
+// T-shaped pockets
+[[-1.1],[1.1]].forEach(([z])=>{box(.55,.08,1.0,'dark',-.3,.73,z);box(1.3,.08,.28,'dark',-.3,.73,z+(z<0?-.6:.6));});
+// small holes
+for(let i=-1;i<=1;i+=2)for(let j=0;j<5;j++)for(let k=-1;k<=1;k+=2){
+ cyl(.09,.08,'dark',-.3+k*.8,.74,-1.7+j*.85,16);}
+// side rails screws
+[-1.9,1.9].forEach(z=>{cyl(.14,.1,'dark',1.75,.97,z,20);cyl(.14,.1,'dark',-1.9,.72,z,20);});
+
+// left cylinder block + rod
+box(1.3,1.0,1.3,'dark',-4.1,.7,-.3);
+cyl(.45,3,'metal',-4.9,.75,-.3,40,true);
+cyl(.5,.2,'a2',-3.4,.75,-.3,40,true);
+// right cylinder block
+box(1.4,1.0,1.5,'dark',4.2,.7,0);
+cyl(.55,1.05,'metal',3.95,.7,0,48);
+cyl(.38,1.1,'dark',3.95,.7,0,32);
+cyl(.2,.9,'metal',3.95,.72,0,24,false);
+// red/orange pad
+cyl(.5,.55,'a1',3.7,.48,-2.7);
+cyl(.5,.08,'metal',3.7,.78,-2.7);
+// amber bushing
+cyl(.5,.9,'a2',-4.5,.65,2.4);
+cyl(.35,.06,'dark',-4.5,1.12,2.4,32);
+// white/amber top-right bushing
+cyl(.45,.7,'a2',-3.4,.55,-2.9);
+cyl(.3,.06,'dark',-3.4,.92,-2.9,32);
+
+// label
+const lc=document.createElement('canvas');lc.width=512;lc.height=64;
+const g=lc.getContext('2d');g.font='bold 34px monospace';g.fillStyle='#ff7a5c';g.textAlign='center';g.textBaseline='middle';g.fillText('290/300_BRKT  OP30',256,32);
+const lt=new THREE.CanvasTexture(lc);
+const lab=new THREE.Mesh(new THREE.PlaneGeometry(4,.5),new THREE.MeshBasicMaterial({map:lt,transparent:true}));
+lab.rotation.x=-Math.PI/2;lab.position.set(-1.2,.22,3.2);G.add(lab);
+
+let az=-.6,el=.62,dist=19;
+function renderOnce(){cam.position.set(dist*Math.cos(el)*Math.sin(az),dist*Math.sin(el),dist*Math.cos(el)*Math.cos(az));cam.lookAt(0,.3,0);R.render(S,cam)}
+function rs(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();renderOnce()}
+addEventListener('resize',rs);setTheme('네이비+오렌지');rs();
+addEventListener('message',e=>{if(e.source!==parent||e.origin!==location.origin||e.data?.type!=='jig-progress')return;const p=Math.min(1,Math.max(0,Number(e.data.progress)||0));az=-.6+p*Math.PI*2;renderOnce()});parent.postMessage({type:'jig-ready'},location.origin);
+}catch(e){parent.postMessage({type:'jig-error'},location.origin)}</script></html>
