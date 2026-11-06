@@ -228,3 +228,21 @@ footer .footer-brand img{display:none}footer p,footer small{margin-left:0}footer
 #equipment .equipment-grid article>div{padding:24px;min-height:150px;flex:1;background:#f5f7f9}
 @media(max-width:850px){#equipment .equipment-grid img,#equipment .equipment-grid img.equipment-contain,#equipment .equipment-grid img.equipment-photo{height:240px;padding:20px}}
 @media(max-width:600px){#equipment .equipment-grid img,#equipment .equipment-grid img.equipment-contain,#equipment .equipment-grid img.equipment-photo{height:180px;padding:14px}#equipment .equipment-grid article>div{padding:16px 12px;min-height:145px}}
+
+#organization .org-pillars{grid-template-columns:repeat(2,minmax(0,1fr))}
+#organization .org-teams{grid-template-columns:repeat(2,minmax(0,1fr))}
+.process-summary li:nth-child(2) .process-step-image img{object-fit:cover;padding:0}
+.process-summary .process-dispatch{display:grid;place-items:center;background:#21394b;color:#c4dceb}
+@media(min-width:851px){
+.process-summary>li:nth-child(n){grid-area:auto}
+.process-summary>li:not(:last-child):after{content:'→';right:-35px;left:auto;top:46%;bottom:auto}
+.process-summary>li:nth-child(3):after{content:none}
+}
+.equipment-inventory{margin-top:70px}
+.equipment-inventory h2{margin-bottom:24px}
+.inventory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:24px;align-items:start}
+.inventory-grid table{width:100%;border-collapse:collapse;background:#f5f7f9}
+.inventory-grid caption{text-align:left;font-weight:700;padding:12px 14px;background:#24465f;color:white}
+.inventory-grid th,.inventory-grid td{padding:8px 14px;border-bottom:1px solid var(--line);text-align:left}
+.inventory-grid tbody th{font-weight:500}
+@media(max-width:600px){#organization .org-pillars{grid-template-columns:1fr}}
